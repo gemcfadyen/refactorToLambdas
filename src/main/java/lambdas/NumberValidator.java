@@ -15,39 +15,38 @@ public class NumberValidator {
     }
 
     public static void main(String... args) {
-        NumberValidator numberValidator = new NumberValidator(new InputStreamReader(System.in),
+        NumberValidator numberValidator =
+                new NumberValidator(new InputStreamReader(System.in),
                 new OutputStreamWriter(System.out));
         runApp(numberValidator);
     }
 
     public int promptUntilValidMenuChoice() {
-        Function<String, Integer> formatNumber = input -> parseToInt(input);
-        Function<String, Boolean> invalidInput = input -> invalidMenuChoice(input);
-        Function<Void, Void> prompt = prompts -> {
-            promptForMenuChoice();
-            return null;
-        };
-
-        return validatingPrompt(formatNumber, prompt, invalidInput);
+        return validatingPrompt(parsesToInteger(),
+                menuPrompt(),
+                this::invalidMenuChoice);
     }
 
     public int promptUntilValidNumberEntered() {
-        Function<String, Integer> formatNumber = input -> parseToInt(input);
+        return validatingPrompt(parsesToInteger(),
+                numberGamePrompt(),
+                this::invalid);
+    }
 
-        Function<String, Boolean> invalidInput = input -> invalid(input);
+    private Function<String, Integer> parsesToInteger() {
+        return Integer::parseInt;
+    }
 
-        Function<Void, Void> prompt = prompts -> {
-            promptForNumber();
+    private Function<Void, Void> menuPrompt() {
+        return prompts -> {
+            promptForMenuChoice();
             return null;
         };
-
-        return validatingPrompt(formatNumber, prompt, invalidInput);
     }
 
     private int validatingPrompt(Function<String, Integer> formatted,
                                  Function<Void, Void> prompt,
                                  Function<String, Boolean> condition) {
-
         prompt.apply(null);
         String input = readInput();
 
@@ -59,10 +58,16 @@ public class NumberValidator {
         return formatted.apply(input);
     }
 
+    private Function<Void, Void> numberGamePrompt() {
+        return prompts -> {
+            promptForNumber();
+            return null;
+        };
+    }
+
     private void promptForMenuChoice() {
         write("Please choose:\n(1) Validate number is between 0 and 100\n(2) Exit");
     }
-
 
     private void write(String message) {
         try {
@@ -93,10 +98,6 @@ public class NumberValidator {
         return input.equals("1") || input.equals("2");
     }
 
-    private int parseToInt(String input) {
-        return parseInt(input);
-    }
-
     private void promptForNumber() {
         write("Please enter a number:");
     }
@@ -115,7 +116,7 @@ public class NumberValidator {
     }
 
     private boolean isInRange(String input) {
-        int number = parseToInt(input);
+        int number = parseInt(input);
         return number >= 0 && number <= 100;
     }
 
