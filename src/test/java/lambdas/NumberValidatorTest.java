@@ -98,6 +98,7 @@ public class NumberValidatorTest {
         NumberValidator numberValidator = new NumberValidator(reader, writer);
 
         numberValidator.runApp(numberValidator);
+        System.out.println(writer.toString());
         assertTrue(writer.toString().equals(MENU_PROMPT + NUMBER_PROMPT));
     }
 

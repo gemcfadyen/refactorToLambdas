@@ -1,6 +1,7 @@
 package lambdas;
 
 import java.io.*;
+import java.util.function.Function;
 
 import static java.lang.Integer.parseInt;
 
@@ -19,36 +20,49 @@ public class NumberValidator {
         runApp(numberValidator);
     }
 
-    public static void runApp(NumberValidator numberValidator) {
-        numberValidator.promptUntilValidMenuChoice();
-        numberValidator.promptUntilValidNumberEntered();
-    }
-
     public int promptUntilValidMenuChoice() {
-        promptForMenuChoice();
-        String input = readInput();
-
-        while (invalidMenuChoice(input)) {
+        Function<String, Integer> formatNumber = input -> parseToInt(input);
+        Function<String, Boolean> invalidInput = input -> invalidMenuChoice(input);
+        Function<Void, Void> prompt = prompts -> {
             promptForMenuChoice();
-            input = readInput();
-        }
-        return parseToInt(input);
+            return null;
+        };
+
+        return validatingPrompt(formatNumber, prompt, invalidInput);
     }
 
     public int promptUntilValidNumberEntered() {
-        promptForNumber();
+        Function<String, Integer> formatNumber = input -> parseToInt(input);
+
+        Function<String, Boolean> invalidInput = input -> invalid(input);
+
+        Function<Void, Void> prompt = prompts -> {
+            promptForNumber();
+            return null;
+        };
+
+        return validatingPrompt(formatNumber, prompt, invalidInput);
+    }
+
+    private int validatingPrompt(Function<String, Integer> formatted,
+                                 Function<Void, Void> prompt,
+                                 Function<String, Boolean> condition) {
+
+        prompt.apply(null);
         String input = readInput();
 
-        while (invalid(input)) {
-            promptForNumber();
+        while (condition.apply(input)) {
+            prompt.apply(null);
             input = readInput();
         }
-        return parseToInt(input);
+
+        return formatted.apply(input);
     }
 
     private void promptForMenuChoice() {
         write("Please choose:\n(1) Validate number is between 0 and 100\n(2) Exit");
     }
+
 
     private void write(String message) {
         try {
@@ -112,5 +126,10 @@ public class NumberValidator {
         } catch (NumberFormatException e) {
             return false;
         }
+    }
+
+    public static void runApp(NumberValidator numberValidator) {
+        numberValidator.promptUntilValidMenuChoice();
+        numberValidator.promptUntilValidNumberEntered();
     }
 }
